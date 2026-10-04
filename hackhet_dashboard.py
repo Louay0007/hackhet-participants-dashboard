@@ -526,13 +526,14 @@ class Sidebar(QWidget):
             self.buttons[key] = (btn, ic, lab, icon)
         root.addStretch(1)
         tag = QLabel(
-            '<div style="color:#ffffff; font-size:16px; font-family:%s;">'
-            'Ensemble,<br/>transformons<br/>les id\u00e9es en <b style="color:#3fa9ff;">impact !</b></div>' % FONT_STACK
+            '<div style="color:#ffffff; font-size:15px; font-weight:600; line-height:1.45; font-family:%s;">'
+            'Ensemble,<br/>transformons<br/>les id\u00e9es en <b style="color:#4fd2ff;">impact !</b></div>' % FONT_STACK
         )
-        tag.setContentsMargins(48, 0, 0, 0)
+        tag.setContentsMargins(126, 0, 8, 0)
         tag.setAttribute(Qt.WA_TranslucentBackground, True)
+        tag.setWordWrap(True)
         root.addWidget(tag)
-        root.addSpacing(86)
+        root.addSpacing(64)
         self.refresh()
 
     def set_active(self, key):
@@ -567,21 +568,35 @@ class Sidebar(QWidget):
         p = QPainter(self)
         p.setRenderHint(QPainter.Antialiasing, True)
         g = QLinearGradient(0, 0, 0, self.height())
-        g.setColorAt(0, QColor("#0a0e30"))
+        g.setColorAt(0, QColor("#070b28"))
+        g.setColorAt(0.55, QColor("#0a0e30"))
         g.setColorAt(1, QColor("#0d1142"))
         p.fillRect(self.rect(), g)
         h = self.height()
-        w = self.width()
-        polys = [
-            ([(8, 0), (52, -84), (96, -40), (52, 44)], "#3b44f0", 140),
-            ([(52, 44), (96, -40), (150, 0), (106, 84)], "#5a5af5", 120),
-            ([(96, -40), (150, -100), (196, -50), (150, 0)], "#7b3fe4", 150),
-            ([(8, -100), (52, -150), (96, -110), (52, -50)], "#2f7bf0", 170),
-            ([(96, -110), (150, -160), (200, -120), (156, -60)], "#4a54ff", 200),
-            ([(150, 0), (200, -50), (244, -10), (200, 50)], "#3fa9ff", 230),
-        ]
         p.setPen(Qt.NoPen)
-        for pts, color, alpha in polys:
+        glow = QColor("#2b3bff")
+        glow.setAlpha(36)
+        p.setBrush(glow)
+        p.drawEllipse(QRect(-80, -40, 200, 200))
+        deep = QColor("#060a26")
+        deep.setAlpha(150)
+        p.setBrush(deep)
+        p.drawRect(QRect(0, h - 200, self.width(), 200))
+        shapes = [
+            ([(14, -252), (14, -196), (62, -224)], "#6d4dff", 255),
+            ([(66, -248), (66, -198), (108, -223)], "#2e2fa8", 235),
+            ([(30, -192), (52, -192), (52, -162), (30, -162)], "#3d3fd6", 255),
+            ([(56, -186), (80, -186), (80, -154), (56, -154)], "#5a4df0", 255),
+            ([(16, -156), (16, -112), (56, -134)], "#2b2f9e", 235),
+            ([(48, -128), (48, -76), (96, -102)], "#4b3dff", 255),
+            ([(8, -104), (8, -48), (52, -76)], "#4b3dff", 255),
+            ([(30, -60), (72, -60), (72, -18), (30, -18)], "#3335c4", 255),
+            ([(56, -40), (96, -40), (96, 2), (56, 2)], "#23259b", 235),
+            ([(8, -30), (48, -30), (48, 12), (8, 12)], "#23259b", 235),
+            ([(24, 8), (84, 8), (18, 68)], "#4b3dff", 255),
+            ([(58, 26), (94, 26), (94, 62), (58, 62)], "#3a36c2", 255),
+        ]
+        for pts, color, alpha in shapes:
             c = QColor(color)
             c.setAlpha(alpha)
             path = QPainterPath()
@@ -590,7 +605,12 @@ class Sidebar(QWidget):
                 path.lineTo(x, h + y)
             path.closeSubpath()
             p.fillPath(path, c)
-        _ = w
+        hi = QColor("#ffffff")
+        hi.setAlpha(26)
+        p.setBrush(hi)
+        p.drawRect(QRect(14, h - 252, 4, 56))
+        p.drawRect(QRect(48, h - 128, 4, 52))
+        _ = self.width()
 
 class TopBar(QWidget):
     def __init__(self, on_search, parent=None):
