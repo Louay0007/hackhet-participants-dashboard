@@ -1,8 +1,3 @@
-# -*- coding: utf-8 -*-
-"""HackHet - Gestion des participants (admin dashboard).
-Run with:  python hackhet_dashboard.py
-Requires:  Python 3.10+ and PySide6 (pip install PySide6).
-"""
 import os
 import sys
 import tempfile
@@ -15,9 +10,6 @@ from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QFrame, QGrap
                                QHBoxLayout, QLabel, QLineEdit, QMainWindow, QPushButton,
                                QScrollArea, QSizePolicy, QVBoxLayout, QWidget)
 
-# ----------------------------------------------------------------------------
-# Design tokens
-# ----------------------------------------------------------------------------
 PAGE_BG = "#f4f6fd"
 CARD_BORDER = "#eef0fb"
 INK = "#141a3d"
@@ -36,9 +28,6 @@ VIOLET = "#7b3fe4"
 DANGER = "#e5384f"
 FONT_STACK = "'Inter', 'Plus Jakarta Sans', 'Segoe UI', 'Helvetica Neue', Arial"
 
-# ----------------------------------------------------------------------------
-# Inline SVG icons (Feather-style, 24x24, stroke only, round caps/joins)
-# ----------------------------------------------------------------------------
 ICONS = {
     "home": '<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>'
              '<polyline points="9 22 9 12 15 12 15 22"/>',
@@ -129,9 +118,7 @@ ICONS = {
 _pixmap_cache = {}
 _chevron_url = None
 
-
 def svg_pixmap(name, color, size, stroke=2.0):
-    """Render an inline feather-style SVG icon to a crisp QPixmap."""
     key = (name, color, int(size), float(stroke))
     pm = _pixmap_cache.get(key)
     if pm is not None and not pm.isNull():
@@ -164,9 +151,7 @@ def svg_pixmap(name, color, size, stroke=2.0):
     _pixmap_cache[key] = pix
     return pix
 
-
 def get_chevron_url():
-    """Render the combo chevron to a temp PNG and return its file url."""
     global _chevron_url
     if _chevron_url:
         return _chevron_url
@@ -180,7 +165,6 @@ def get_chevron_url():
     _chevron_url = path.replace(chr(92), "/")
     return _chevron_url
 
-
 def card_shadow(widget, blur=30, dy=6, alpha=0.11):
     eff = QGraphicsDropShadowEffect(widget)
     eff.setBlurRadius(blur)
@@ -188,7 +172,6 @@ def card_shadow(widget, blur=30, dy=6, alpha=0.11):
     eff.setColor(QColor(60, 70, 170, int(alpha * 255)))
     widget.setGraphicsEffect(eff)
     return eff
-
 
 def glow_shadow(widget, color="#3c46f0", blur=24, dy=6, alpha=0.35):
     c = QColor(color)
@@ -200,7 +183,6 @@ def glow_shadow(widget, color="#3c46f0", blur=24, dy=6, alpha=0.35):
     widget.setGraphicsEffect(eff)
     return eff
 
-
 def icon_label(name, color, size, stroke=2.0):
     lab = QLabel()
     lab.setPixmap(svg_pixmap(name, color, size, stroke))
@@ -209,11 +191,7 @@ def icon_label(name, color, size, stroke=2.0):
     lab.setAttribute(Qt.WA_TransparentForMouseEvents, True)
     return lab
 
-# ----------------------------------------------------------------------------
-# Custom painted widgets
-# ----------------------------------------------------------------------------
 class LogoMark(QWidget):
-    """66x70 hexagonal cube mark with a white rounded H on top."""
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setFixedSize(66, 70)
@@ -271,11 +249,10 @@ class LogoMark(QWidget):
         p.drawRoundedRect(QRect(37, 22, 7, 28), 3, 3)
         p.drawRoundedRect(QRect(22, 32, 22, 7), 3, 3)
 
-
 class DonutWidget(QWidget):
     def __init__(self, segments, parent=None):
         super().__init__(parent)
-        self.segments = segments  # list of (value, color)
+        self.segments = segments
         self.setFixedSize(132, 132)
 
     def paintEvent(self, event):
@@ -307,7 +284,6 @@ class DonutWidget(QWidget):
         p.setFont(f2)
         p.drawText(QRect(0, 72, 132, 18), Qt.AlignHCenter | Qt.AlignVCenter, "participants")
 
-
 class ProgressWidget(QWidget):
     def __init__(self, value, max_value=51, grad=("#4f46e5", "#6d5ff7"), parent=None):
         super().__init__(parent)
@@ -333,9 +309,7 @@ class ProgressWidget(QWidget):
         p.setBrush(g)
         p.drawRoundedRect(QRectF(0, y, bw, h), h / 2, h / 2)
 
-
 class AvatarWidget(QWidget):
-    """42px circle avatar: light-blue bg + navy hair, skin face, indigo shoulders."""
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setFixedSize(42, 42)
@@ -362,9 +336,7 @@ class AvatarWidget(QWidget):
         p.drawRoundedRect(QRect(12, 8, 18, 8), 4, 4)
         p.restore()
 
-
 class NotifButton(QPushButton):
-    """Circular 42px white button with icon + red dot (white 2px ring)."""
     def __init__(self, icon, parent=None):
         super().__init__(parent)
         self.icon_name = icon
@@ -389,9 +361,7 @@ class NotifButton(QPushButton):
         p.setBrush(QColor("#ef4444"))
         p.drawEllipse(QRect(28, 5, 9, 9))
 
-
 class AvatarBadge(QLabel):
-    """36px circular avatar with 2-letter initials (pastel bg + darker text)."""
     def __init__(self, initials, bg, fg, parent=None):
         super().__init__(parent)
         self.initials = initials
@@ -409,7 +379,6 @@ class AvatarBadge(QLabel):
         f = QFont("Inter, Segoe UI, Arial", 13, QFont.Bold)
         p.setFont(f)
         p.drawText(self.rect(), Qt.AlignCenter, self.initials)
-
 
 class BadgeDot(QLabel):
     def __init__(self, diameter, grad, icon, icon_color="#ffffff", icon_size=22, parent=None):
@@ -444,9 +413,6 @@ class BadgeDot(QLabel):
             y = (d - self.icon_size) / 2.0
             p.drawPixmap(QRectF(x, y, self.icon_size, self.icon_size), pm, QRectF(pm.rect()))
 
-# ----------------------------------------------------------------------------
-# Data
-# ----------------------------------------------------------------------------
 PARTICIPANTS = [
     dict(initials="SB", name="Sarah Ben Ali", school="ESPRIT", email="sarah.benali@esprit.tn", role="Etudiant", team="GreenTech", status="Actif", bg="#e8dcff", fg="#7a45e0"),
     dict(initials="MT", name="Mohamed Trabelsi", school="ESPRIT", email="mohamed.trabelsi@esprit.tn", role="Etudiant", team="CodeCraft", status="Actif", bg="#d9e6ff", fg="#2b5fd9"),
@@ -479,16 +445,13 @@ NAV_LABELS = {"Accueil": "Accueil", "Participants": "Participants", "Organisateu
 NAV_LABELS = {"Accueil": "Accueil", "Participants": "Participants", "Organisateurs": "Organisateurs", "Sponsors": "Sponsors", "Equipes": "\u00c9quipes", "Jury": "Jury", "Evenements": "\u00c9v\u00e9nements", "Parametres": "Param\u00e8tres"}
 ROLE_DISPLAY = {"Etudiant": "\u00c9tudiant", "Enseignant": "Enseignant", "Professionnel": "Professionnel", "Autre": "Autre"}
 
-
 def norm(s):
     return (s or "").replace("\u00c9", "E").replace("\u00e9", "e").replace("\u00e8", "e").replace("\u00ea", "e").lower()
-
 
 def style_card(w):
     w.setStyleSheet("QFrame { background: #ffffff; border: 1px solid %s; border-radius: 14px; }" % CARD_BORDER)
     card_shadow(w)
     return w
-
 
 _uid = [0]
 
@@ -499,11 +462,9 @@ def transparent_widget(w):
     w.setStyleSheet("QWidget#%s { background: transparent; border: none; }" % name)
     return w
 
-
 def clickable(w):
     w.setCursor(Qt.PointingHandCursor)
     return w
-
 
 def pill(text, bg, fg):
     lab = QLabel(text)
@@ -514,7 +475,6 @@ def pill(text, bg, fg):
     )
     lab.setFixedHeight(22)
     return lab
-
 
 class Sidebar(QWidget):
     def __init__(self, parent=None):
@@ -632,7 +592,6 @@ class Sidebar(QWidget):
             p.fillPath(path, c)
         _ = w
 
-
 class TopBar(QWidget):
     def __init__(self, on_search, parent=None):
         super().__init__(parent)
@@ -676,7 +635,6 @@ class TopBar(QWidget):
         root.addLayout(namecol)
         root.addWidget(icon_label("chevron-down", BODY, 16, 2.2))
 
-
 class PageHeader(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -707,7 +665,6 @@ class PageHeader(QWidget):
         glow_shadow(add_btn, blur=24, dy=6, alpha=0.35)
         root.addWidget(add_btn)
 
-
 def stat_card(icon, badge_bg, badge_fg, title, value, caption_html):
     card = QFrame()
     card.setFixedHeight(124)
@@ -736,7 +693,6 @@ def stat_card(icon, badge_bg, badge_fg, title, value, caption_html):
     outer.addWidget(cap)
     return card
 
-
 def build_stat_row():
     row = QHBoxLayout()
     row.setSpacing(12)
@@ -751,7 +707,6 @@ def build_stat_row():
     row.addWidget(stat_card("users", "#fff0d0", ORANGE, "Autres", "16",
         '<b style="color:%s;">13%%</b> du total' % ORANGE))
     return row
-
 
 class CheckBox(QPushButton):
     def __init__(self, checked=False, parent=None):
@@ -787,7 +742,6 @@ class CheckBox(QPushButton):
             )
             self.setIcon(QIcon())
 
-
 class ActionButton(QPushButton):
     def __init__(self, icon, parent=None):
         super().__init__(parent)
@@ -798,7 +752,6 @@ class ActionButton(QPushButton):
             "QPushButton { background: #ffffff; border: 1px solid #e0e4f4; border-radius: 14px; }"
             "QPushButton:hover { background: #eef0ff; }"
         )
-
 
 class ParticipantsCard(QFrame):
     def __init__(self, parent=None):
@@ -813,7 +766,6 @@ class ParticipantsCard(QFrame):
         root = QVBoxLayout(self)
         root.setContentsMargins(15, 15, 15, 15)
         root.setSpacing(12)
-        # ---- toolbar ----
         bar = QHBoxLayout()
         bar.setSpacing(10)
         search_wrap = QFrame()
@@ -853,7 +805,6 @@ class ParticipantsCard(QFrame):
         )
         bar.addWidget(sliders)
         root.addLayout(bar)
-        # ---- table frame ----
         self.table = QFrame()
         self.table.setStyleSheet("QFrame { background: #ffffff; border: 1px solid #edf0fb; border-radius: 12px; }")
         troot = QVBoxLayout(self.table)
@@ -884,7 +835,6 @@ class ParticipantsCard(QFrame):
         troot.addWidget(rows_wrap)
         self.table.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
         root.addWidget(self.table, 0)
-        # ---- footer ----
         foot = QHBoxLayout()
         foot.setContentsMargins(2, 0, 2, 0)
         self.count_label = QLabel("")
@@ -1033,7 +983,6 @@ class ParticipantsCard(QFrame):
             h.setContentsMargins(14, 0, 14, 0)
             h.setSpacing(8)
             h.addWidget(CheckBox(), COL_STRETCH[0])
-            # name cell
             name_cell = QWidget()
             name_cell.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Preferred)
             name_cell.setStyleSheet("QWidget { background: transparent; border: none; }")
@@ -1099,7 +1048,6 @@ class ParticipantsCard(QFrame):
             self.count_label.setText("Affichage de 1 \u00e0 %d sur 120 participants" % n)
         self._paint_pages()
 
-
 def card_header(icon, title, right=None, badge=False, icon_bg="#5b4df6"):
     head = QHBoxLayout()
     head.setSpacing(8)
@@ -1118,7 +1066,6 @@ def card_header(icon, title, right=None, badge=False, icon_bg="#5b4df6"):
     wrap.setLayout(head)
     return wrap
 
-
 def voir_tout():
     b = QPushButton("Voir tout")
     b.setCursor(Qt.PointingHandCursor)
@@ -1130,14 +1077,12 @@ def voir_tout():
     )
     return b
 
-
 def collapse_btn():
     b = QPushButton()
     b.setFixedSize(20, 20)
     b.setCursor(Qt.PointingHandCursor)
     b.setStyleSheet("QPushButton { border: none; background: transparent; }")
     return b
-
 
 def filter_checkbox(text, checked=False):
     row = QHBoxLayout()
@@ -1151,7 +1096,6 @@ def filter_checkbox(text, checked=False):
     wrap = transparent_widget(QWidget())
     wrap.setLayout(row)
     return wrap, cb
-
 
 def build_filters_card():
     card = QFrame()
@@ -1243,7 +1187,6 @@ def build_filters_card():
     reset_btn.clicked.connect(_reset)
     return card
 
-
 def build_role_card():
     card = QFrame()
     style_card(card)
@@ -1290,7 +1233,6 @@ def build_role_card():
     chev.clicked.connect(lambda: (body.setVisible(not body.isVisible()), chev.setIcon(QIcon(svg_pixmap("chevron-up" if body.isVisible() else "chevron-down", BODY, 14, 2.2)))))
     return card
 
-
 def build_skills_card():
     card = QFrame()
     style_card(card)
@@ -1326,7 +1268,6 @@ def build_skills_card():
         wrap.setLayout(row)
         root.addWidget(wrap)
     return card
-
 
 def build_top_teams_card():
     card = QFrame()
@@ -1395,7 +1336,6 @@ def build_top_teams_card():
     root.addWidget(wrap)
     return card
 
-
 def build_matching_banner():
     card = QFrame()
     card.setStyleSheet(
@@ -1419,7 +1359,6 @@ def build_matching_banner():
     root.addLayout(col, 1)
     root.addWidget(icon_label("arrow-right", PRIMARY, 18, 2.2))
     return card
-
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -1482,14 +1421,12 @@ class MainWindow(QMainWindow):
         cols.setStretch(1, 0)
         pl.addLayout(cols, 1)
 
-
 def main():
     app = QApplication(sys.argv)
     app.setApplicationName("HackHet")
     win = MainWindow()
     win.show()
     sys.exit(app.exec())
-
 
 if __name__ == "__main__":
     main()
